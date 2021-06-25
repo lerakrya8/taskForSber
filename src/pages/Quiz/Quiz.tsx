@@ -3,12 +3,15 @@ import { cn } from '@bem-react/classname';
 import { useDispatch } from 'react-redux';
 import { fetchQuizQuestion } from 'store/actions/quiz';
 import { useAppSelector } from 'store/store';
+import { FetchStatus } from 'types/api';
+
+import './Quiz.scss';
 
 const CnQuiz = cn('quiz');
 
 export const Quiz = () => {
 
-  const { quiz } = useAppSelector((state) => state.quiz);
+  const { fetchStatus, quiz } = useAppSelector((state) => state.quiz);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -105,28 +108,29 @@ const shuffle = useCallback((array: string[]) => {
   }, [setShowScore, setCurrentQuestion]);
 
   const  escapeHtml = useCallback((text: string) => {
-    return text?.replace(/&amp;/g, "&").replace(/&gt;/g, ">").replace(/&lt;/g, "<").replace(/&quot;/g, '"').replace(/&#039;/g, "'");
+    return text?.replace(/&amp;/g, "&").replace(/&gt;/g, ">").replace(/&lt;/g, "<").replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&rdquo;/g, '”').replace(/&ldquo;/g, '“');
   }, []);
 
   return (
     <div className={CnQuiz()}>
       {showScore ? (
         <div className={CnQuiz('showScore')}>
-            <div className={CnQuiz('easyQuestionScore')}>
-              <div className={CnQuiz('easyTotal')}>
+          <div className={CnQuiz('title')}>Результаты</div>
+            <div className={CnQuiz('score')}>
+              {easyQuestions &&  <div className={CnQuiz('total')}>
                 {`Easy: ${scoreEasy} / ${easyQuestions}`}
-              </div>
-              <div className={CnQuiz('easyTotal')}>
+              </div>}
+              {mediumQuestions &&  <div className={CnQuiz('total')}>
                 {`Medium: ${scoreMedium} / ${mediumQuestions}`}
-              </div>
-              <div className={CnQuiz('easyTotal')}>
+              </div>}
+              {hardQuestions && <div className={CnQuiz('total')}>
                 {`Hard: ${scoreHard} / ${hardQuestions}`}
-              </div>
+              </div>}
             </div>
             <button onClick={handleRestartQuiz} className={CnQuiz('restart')}>Пройти еще раз</button>
         </div>
       ) :
-      (<div className={CnQuiz('question')}>
+      (fetchStatus === FetchStatus.FETCHED ? <div className={CnQuiz('question')}>
         <div className={CnQuiz('questionSection')}>
           <div className={CnQuiz('questionCount')}>
               <span>Вопрос {currentQuestion + 1 }</span> / {amountQuestions}</div>
@@ -138,13 +142,14 @@ const shuffle = useCallback((array: string[]) => {
               {answers?.map((item, index) => (
                 <label key={index}>
                   <input name={`question${currentQuestion}`} type={multipleAnswer ? 'checkbox' : 'radio'} onChange={handleCheckAnswer(item, index, multipleAnswer)} checked={checkedItem[index]}/>
-                  {item}
+                  {escapeHtml(item)}
                 </label> 
               ))}
             </div>
-          </div>
-          <button className={CnQuiz('answer')} onClick={handleAnswerClick(quiz.results[currentQuestion]?.difficulty)}>Ответить</button>
-        </div>)}
+          <button className={CnQuiz('answer', {error})} onClick={handleAnswerClick(quiz.results[currentQuestion]?.difficulty)}>Ответить</button>
+          {error && <div className={CnQuiz('error')}>Please, choose answer or answers!</div>}
+        </div>
+      </div> : <div className={CnQuiz('question')}><div className={CnQuiz('wait')}>Please, wait...</div></div>)}
     </div>
   );
 }
