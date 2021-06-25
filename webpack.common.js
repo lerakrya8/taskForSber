@@ -1,7 +1,6 @@
 const path = require('path');
-const webpack = require('webpack');
-
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
 const dirNode = 'node_modules';
 const dirApp = path.join(__dirname, 'src');
@@ -14,15 +13,12 @@ module.exports = (env) => {
     const IS_DEV = !!env.dev;
 
     return {
-        entry: {
-            main: path.join(dirApp, 'index'),
-        },
+        entry: './src/index.tsx',
 
         plugins: [
             new webpack.DefinePlugin({ IS_DEV }),
-
             new HtmlWebpackPlugin({
-                template: path.join(__dirname, 'index.ejs'),
+                template: '/public/index.html',
             }),
         ],
 
